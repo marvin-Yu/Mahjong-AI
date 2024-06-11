@@ -2,7 +2,6 @@ import os
 import torch
 from torch.optim import Adam
 import argparse
-import wandb
 from torch.nn import CrossEntropyLoss
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
@@ -39,7 +38,6 @@ parser.add_argument('--num_layers', '-n', default=50, type=int)
 parser.add_argument('--epochs', '-e', default=10, type=int)
 args = parser.parse_args()
 
-experiment = wandb.init(project='Mahjong', resume='allow', anonymous='must', name=f'train-{mode}-sl')
 train_set = TenhouDataset(data_dir='data', batch_size=128, mode=mode, target_length=2)
 test_set = TenhouDataset(data_dir='data', batch_size=128, mode=mode, target_length=2)
 length = len(train_set)
@@ -73,7 +71,7 @@ for epoch in range(epochs):
         optim.step()
         global_step += 1
         print(f"Epoch-{epoch + 1}: {len_train - len(train_set)} / {len_train} loss={loss.item():.3f}".center(50, '-'), end='\r')
-        experiment.log({
+        print({
             'train loss': loss.item(),
             'epoch': epoch + 1
         })
@@ -88,10 +86,5 @@ for epoch in range(epochs):
         torch.save({"state_dict": model.state_dict(), "num_layers": num_layers, "in_channels": in_channels}, f'output/{mode}-model/checkpoints/best.pt')
     model.train()
 
-    experiment.log({
-        'epoch': epoch + 1,
-        'test_acc': acc,
-        'lr': optim.param_groups[0]['lr']
-    })
+    print({"epoch": epoch + 1, "test_acc": acc, "lr": optim.param_groups[0]["lr"]})
     scheduler.step(acc)
-

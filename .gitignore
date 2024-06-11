@@ -1,0 +1,6 @@
+data/
+logs/
+*.pyc
+wandb/
+*.png
+output/
